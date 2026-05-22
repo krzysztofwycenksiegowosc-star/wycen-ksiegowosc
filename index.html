@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WycenKsiegowosc.pl – Sprawdź, czy nie przepłacasz za księgowość</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Plus+Jakarta+Sans:wght@400..700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!--
+      Ukryty formularz dla Netlify Forms – wykrywany podczas budowania strony.
+      React wysyła dane programowo przez fetch na /__forms.html
+    -->
+    <form name="wycena" netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="company-type" />
+      <input type="text" name="tax-form" />
+      <input type="text" name="invoices" />
+      <input type="text" name="current-cost" />
+      <input type="email" name="email" />
+      <input type="text" name="estimated-range" />
+    </form>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
