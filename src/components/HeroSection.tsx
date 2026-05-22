@@ -46,7 +46,7 @@ export function HeroSection() {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-slate-500 leading-relaxed mb-10 max-w-2xl">
-            Wiele małych firm zauważyło, że ceny usług księgowych rosną — mimo cyfryzacji i
+            Wiele małych firm nie zauważyło, że ceny usług księgowych rosną — mimo cyfryzacji i
             automatyzacji, które miały je obniżyć. Sprawdź, gdzie jesteś i podejmij świadomą
             decyzję.
           </p>
