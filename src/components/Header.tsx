@@ -32,7 +32,7 @@ export function Header() {
             <span className="text-white font-extrabold text-sm tracking-tight">W</span>
           </div>
           <span className="font-bold text-slate-900 text-lg tracking-tight">
-            Wycen<span className="text-emerald-600">Księgowość</span>
+            Wyceń<span className="text-emerald-600">Księgowość</span>
             <span className="text-slate-300 font-medium">.pl</span>
           </span>
         </a>
