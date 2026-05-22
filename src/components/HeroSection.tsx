@@ -37,10 +37,10 @@ export function HeroSection() {
           <h1 className="text-[2.5rem] sm:text-5xl md:text-[3.5rem] lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.08] mb-6">
             Czy po KSeF nadal płacisz za księgowość{' '}
             <span className="relative">
-              {/*<span className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">*/}
+              <span className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
                 tyle, ile powinieneś?
-              {/*</span>*/}
-              <span className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400/30 to-teal-400/30 rounded-full" />
+              </span>
+              {/*<span className="absolute -bottom-1 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400/30 to-teal-400/30 rounded-full" />*/}
             </span>
           </h1>
 
