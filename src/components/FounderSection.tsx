@@ -19,13 +19,16 @@ export function FounderSection() {
 
           <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3.5 py-1.5 rounded-full text-sm font-medium mb-6">
             <MessageCircle size={14} />
-            Słowo od twórcy
+            Dlaczego stworzyłem WycenKsiegowosc.pl?
           </div>
 
           <blockquote className="text-xl md:text-2xl font-medium text-slate-800 leading-relaxed mb-6">
-            „Sam jestem przedsiębiorcą i zmieniałem księgowego trzy razy. Każdy raz obawiałem się
-            chaosu — a każdy raz okazywał się spokojniejszy, niż myślałem. Stworzyłem to miejsce,
-            żeby inni nie musieli działać w ciemno."
+            „Po rozmowach z przedsiębiorcami zauważyłem, że wiele firm kompletnie nie wie dziś, czy płaci za księgowość uczciwą stawkę — szczególnie po zmianach związanych z KSeF.
+
+Powstał chaos:
+duże rozbieżności cenowe, podwyżki bez jasnego uzasadnienia i ogromna niepewność przy zmianie biura.
+
+WycenKsiegowosc.pl powstało po to, żeby uporządkować ten rynek i pomóc przedsiębiorcom podejmować spokojniejsze decyzje."
           </blockquote>
 
           <div>
