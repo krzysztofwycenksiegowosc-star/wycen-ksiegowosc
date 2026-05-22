@@ -46,7 +46,7 @@ export function HeroSection() {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-slate-500 leading-relaxed mb-10 max-w-2xl">
-            Wiele małych firm nie zauważyło, że ceny usług księgowych rosną — mimo cyfryzacji i
+            Wiele małych firm zauważyło, że ceny usług księgowych rosną — mimo cyfryzacji i
             automatyzacji, które miały je obniżyć. Sprawdź, gdzie jesteś i podejmij świadomą
             decyzję.
           </p>
@@ -67,7 +67,7 @@ export function HeroSection() {
               href="#zmiana"
               className="group inline-flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 px-8 py-4 rounded-2xl text-base font-semibold transition-all duration-300 border border-slate-200 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-100"
             >
-              Jak łatwa jest zmiana księgowości?
+              Jak łatwó zmienić księgowość?
             </a>
           </div>
 
