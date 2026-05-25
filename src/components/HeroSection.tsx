@@ -55,7 +55,7 @@ export function HeroSection() {
               href="#wycena"
               className="group inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl text-base font-semibold transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-600/20 hover:-translate-y-0.5 active:translate-y-0"
             >
-              Sprawdź orientacyjną wycenę
+              Masz firmę? - wyceń księgowość
               <ArrowRight
                 size={18}
                 className="ml-2 transition-transform group-hover:translate-x-1"
@@ -65,7 +65,7 @@ export function HeroSection() {
               href="#zmiana"
               className="group inline-flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 px-8 py-4 rounded-2xl text-base font-semibold transition-all duration-300 border border-slate-200 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-100"
             >
-              Jak łatwó zmienić księgowość?
+              Zakładasz firmę? — sprawdź koszt
             </a>
           </div>
 
