@@ -275,10 +275,12 @@ export function EstimationForm() {
                 <CheckCircle2 size={32} className="text-emerald-600" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">Dziękujemy!</h3>
-              <p className="text-slate-500 leading-relaxed max-w-md mx-auto">
-                Przygotujemy punkt odniesienia na podstawie Twojego profilu i priorytetów. Otrzymasz
-                informacje potrzebne do decyzji — bez lawiny telefonów.
-              </p>
+              <div className="text-slate-500 leading-relaxed max-w-md mx-auto space-y-3">
+                <p>Dziękujemy. Gromadzimy i sprawdzamy wyceny dla Ciebie.</p>
+                <p>Dopasujemy je do Twojej działalności i priorytetów.</p>
+                <p>Otrzymasz je mailem z adresu <span className="font-semibold text-slate-700">twojawycena@wycenksiegowosc.pl</span>.</p>
+                <p>Sprawdź też folder Oferty, Inne lub Spam.</p>
+              </div>
             </div>
           ) : (
             <div className="relative overflow-hidden bg-white rounded-[2rem] border-2 border-emerald-200/80 shadow-2xl shadow-emerald-100/60 p-6 md:p-10">
@@ -296,7 +298,7 @@ export function EstimationForm() {
 
               {/* ── Mode selector ── */}
               <div className="mb-8">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">Jaka jest Twoja sytuacja?</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-3">Masz uwagi, nietypową sytuację - opisz krótko (opcjonalnie)</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {([
                     { m: 'existing' as Mode, title: 'Mam firmę', desc: 'Porównaj obecną cenę księgowości z możliwościami dopasowanymi do profilu Twojej firmy.' },
@@ -538,7 +540,7 @@ export function EstimationForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Jaka jest Twoja sytuacja?</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Masz uwagi, nietypową sytuację - opisz krótko (opcjonalnie)</label>
                     <textarea
                       name="message"
                       value={message}
