@@ -1,119 +1,241 @@
-import { useState, useCallback, type FormEvent } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { useInView } from '../hooks/useInView';
-import { Calculator, ArrowRight, CheckCircle2, TrendingDown, Minus, Plus, Loader2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, CheckCircle2, ChevronRight } from 'lucide-react';
 import { NETLIFY_FORM_NAME } from '../config';
 
-type TaxForm = 'ryczalt' | 'kpir';
-type CompanyType = 'jdg' | 'spolka_cywilna' | 'sp_j' | 'inna';
+// ─── Types ──────────────────────────────────────────────
+type Mode = 'existing' | 'starting';
 
-interface EstimateResult {
-  low: number;
-  mid: number;
-  high: number;
-  currentCost: number;
-  overpaying: boolean;
-  savingsLow: number;
-  savingsHigh: number;
+// ─── Constants ──────────────────────────────────────────
+const COMPANY_TYPES = ['JDG', 'Spółka cywilna', 'Spółka z o.o.', 'Spółka osobowa'];
+const COMPANY_TYPES_STARTING = [...COMPANY_TYPES, 'Jeszcze nie wiem'];
+const TAX_FORMS = ['Ryczałt', 'KPiR', 'Pełna księgowość', 'Nie wiem'];
+const VAT_OPTS = ['Tak', 'Nie', 'Nie wiem'];
+const DOC_RANGES = ['do 10', '11–30', '31–70', '71–150', 'powyżej 150'];
+const DOC_RANGES_STARTING = [...DOC_RANGES, 'Nie wiem'];
+const EMPLOYMENT_OPTS_E = ['Nie', 'Tak'];
+const EMPLOYMENT_OPTS_S = ['Nie', 'Tak', 'Jeszcze nie wiem'];
+const START_TIMEFRAMES = ['Już działam / zaraz startuję', 'W tym miesiącu', 'W ciągu 1–3 miesięcy', 'Później', 'Jeszcze nie wiem'];
+const KSEF_OPTS = ['Wzrosła', 'Nie zmieniła się', 'Zmalała', 'Nie wiem'];
+
+const NEEDS_EXISTING = [
+  'Niska cena',
+  'Łatwy kontakt z księgowym',
+  'Szybka odpowiedź na pytania',
+  'Podgląd online dokumentów i rozliczeń',
+  'Wsparcie w KSeF',
+  'Przypomnienia o terminach',
+  'Pomoc przy zmianie biura',
+  'Proste wyjaśnienia bez żargonu',
+  'Obsługa kadr i umów',
+  'Doświadczenie w mojej branży',
+  'Lepsza organizacja dokumentów',
+  'Jasny zakres obsługi',
+];
+
+const NEEDS_STARTING = [
+  'Niska cena na start',
+  'Pomoc przy zakładaniu firmy',
+  'Pomoc w wyborze formy rozliczenia',
+  'Proste wyjaśnienia bez żargonu',
+  'Łatwy kontakt z księgowym',
+  'Szybka odpowiedź na pytania',
+  'Wsparcie w KSeF',
+  'Podgląd online dokumentów i rozliczeń',
+  'Przypomnienia o terminach',
+  'Pomoc przy VAT',
+  'Obsługa kadr i umów w przyszłości',
+  'Doświadczenie w mojej branży',
+];
+
+// ─── Sub-components ─────────────────────────────────────
+function OptionGroup({ options, value, onChange, columns = 2 }: {
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  columns?: number;
+}) {
+  const gridClass = columns === 3 ? 'grid-cols-3' : 'grid-cols-2';
+  return (
+    <div className={`grid ${gridClass} gap-2`}>
+      {options.map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => onChange(opt)}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all text-left ${
+            value === opt
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-700 shadow-sm'
+              : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+          }`}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
+  );
 }
 
-const COMPANY_TYPE_LABELS: Record<CompanyType, string> = {
-  jdg: 'Jednoosobowa działalność (JDG)',
-  spolka_cywilna: 'Spółka cywilna',
-  sp_j: 'Spółka jawna / partnerska',
-  inna: 'Inna forma',
-};
-
-function calculateEstimate(
-  companyType: CompanyType,
-  taxForm: TaxForm,
-  invoices: number,
-  currentCost: number
-): EstimateResult {
-  let base: number;
-  let perInvoice: number;
-
-  if (taxForm === 'ryczalt') {
-    base = 200;
-    perInvoice = 8;
-  } else {
-    base = 350;
-    perInvoice = 12;
-  }
-
-  if (companyType === 'spolka_cywilna') {
-    base *= 1.15;
-    perInvoice *= 1.1;
-  } else if (companyType === 'sp_j' || companyType === 'inna') {
-    base *= 1.3;
-    perInvoice *= 1.15;
-  }
-
-  const effectivePerInvoice = invoices > 30 ? perInvoice * 0.8 : invoices > 15 ? perInvoice * 0.9 : perInvoice;
-
-  const mid = Math.round(base + invoices * effectivePerInvoice);
-  const low = Math.round(mid * 0.75);
-  const high = Math.round(mid * 1.25);
-
-  const savingsLow = Math.max(0, currentCost - high);
-  const savingsHigh = Math.max(0, currentCost - low);
-
-  return { low, mid, high, currentCost, overpaying: currentCost > mid * 1.15, savingsLow, savingsHigh };
+function StepIndicator({ step, labels }: { step: number; labels: string[] }) {
+  return (
+    <div className="flex items-center gap-1 mb-8">
+      {labels.map((label, i) => (
+        <div key={i} className="flex items-center gap-1 flex-1 min-w-0">
+          <div className={`flex items-center gap-2 ${i + 1 <= step ? 'text-emerald-600' : 'text-slate-300'}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+              i + 1 <= step ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'
+            }`}>
+              {i + 1}
+            </span>
+            <span className="text-xs font-medium truncate hidden sm:inline">{label}</span>
+          </div>
+          {i < labels.length - 1 && (
+            <div className={`h-px flex-1 mx-2 ${i + 1 < step ? 'bg-emerald-300' : 'bg-slate-200'}`} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
+// ─── Submission ─────────────────────────────────────────
 async function submitToNetlify(data: Record<string, string>) {
-  const body = new URLSearchParams({
-    'form-name': NETLIFY_FORM_NAME,
-    ...data,
-  }).toString();
-
+  const body = new URLSearchParams({ 'form-name': NETLIFY_FORM_NAME, ...data }).toString();
   const res = await fetch('/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   });
-
   if (!res.ok) throw new Error('Błąd wysyłki');
 }
 
+// ─── Main Component ────────────────────────────────────
 export function EstimationForm() {
   const { ref, isInView } = useInView();
-  const [companyType, setCompanyType] = useState<CompanyType>('jdg');
-  const [taxForm, setTaxForm] = useState<TaxForm>('ryczalt');
-  const [invoices, setInvoices] = useState(10);
+
+  // Mode & step
+  const [mode, setMode] = useState<Mode>('existing');
+  const [step, setStep] = useState(1); // 1-3 = active form steps
+
+  // Step 1
+  const [companyType, setCompanyType] = useState('');
+  const [taxForm, setTaxForm] = useState('');
+  const [vat, setVat] = useState('');
+  const [documents, setDocuments] = useState('');
+
+  // Step 2
+  const [hasEmployees, setHasEmployees] = useState('');
+  const [employeesUop, setEmployeesUop] = useState('');
+  const [employeesOther, setEmployeesOther] = useState('');
+  const [startTimeframe, setStartTimeframe] = useState('');
+  const [needs, setNeeds] = useState<string[]>([]);
+
+  // Step 3
   const [currentCost, setCurrentCost] = useState('');
-  const [result, setResult] = useState<EstimateResult | null>(null);
+  const [ksefPriceChange, setKsefPriceChange] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
+
+  // Submission
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
 
-  const handleEstimate = useCallback(() => {
-    const cost = parseFloat(currentCost);
-    if (isNaN(cost) || cost <= 0) return;
-    setResult(calculateEstimate(companyType, taxForm, invoices, cost));
-  }, [companyType, taxForm, invoices, currentCost]);
+  // Listen for mode changes from Hero/FinalCTA
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as Mode;
+      if (detail === 'existing' || detail === 'starting') {
+        setMode(detail);
+        setStep(1);
+        // Reset fields
+        setCompanyType('');
+        setTaxForm('');
+        setVat('');
+        setDocuments('');
+        setHasEmployees('');
+        setEmployeesUop('');
+        setEmployeesOther('');
+        setStartTimeframe('');
+        setNeeds([]);
+        setCurrentCost('');
+        setKsefPriceChange('');
+        setEmail('');
+        setPhone('');
+        setMessage('');
+        setSubmitted(false);
+      }
+    };
+    window.addEventListener('wk-form-mode', handler);
+    return () => window.removeEventListener('wk-form-mode', handler);
+  }, []);
 
-  const handleContactSubmit = useCallback(
+  // Handlers
+  const toggleNeed = useCallback((need: string) => {
+    setNeeds((prev) => {
+      if (prev.includes(need)) {
+        return prev.filter((n) => n !== need);
+      }
+      if (prev.length >= 5) return prev;
+      return [...prev, need];
+    });
+  }, []);
+
+  const handleModeSelect = (m: Mode) => {
+    if (m === mode && step > 0) return;
+    setMode(m);
+    setStep(1);
+    setCompanyType('');
+    setTaxForm('');
+    setVat('');
+    setDocuments('');
+    setHasEmployees('');
+    setEmployeesUop('');
+    setEmployeesOther('');
+    setStartTimeframe('');
+    setNeeds([]);
+    setCurrentCost('');
+    setKsefPriceChange('');
+  };
+
+  // Validation
+  const step1Valid = companyType && taxForm && vat && documents;
+  const step2Valid = hasEmployees && needs.length >= 3
+    && (mode === 'starting' ? startTimeframe : true);
+  const step3Valid = email && (mode === 'existing' ? currentCost : true);
+
+  const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
+      if (!step3Valid) return;
       setSubmitting(true);
       setSubmitError(false);
 
-      const formData: Record<string, string> = {
-        email: email || '(brak emaila)',
-        phone: phone || '(brak telefonu)',
-        company_type: COMPANY_TYPE_LABELS[companyType],
-        tax_form: taxForm === 'ryczalt' ? 'Ryczałt' : 'KPiR',
-        invoices_per_month: String(invoices),
-        current_cost: currentCost + ' zł/mies.',
-        estimated_range: result ? `${result.low}–${result.high} zł/mies.` : '(nie wyliczono)',
-        overpaying: result ? (result.overpaying ? 'TAK' : 'NIE') : '(nie wyliczono)',
-        potential_savings: result ? `${result.savingsLow}–${result.savingsHigh} zł/mies.` : '(nie wyliczono)',
+      const data: Record<string, string> = {
+        mode: mode === 'existing' ? 'Mam firmę' : 'Zakładam firmę',
+        company_type: companyType,
+        tax_form: taxForm,
+        vat,
+        documents,
+        has_employees: hasEmployees,
+        employees_uop: employeesUop || '0',
+        employees_other: employeesOther || '0',
+        needs: needs.join(', '),
+        email,
+        phone: phone || '(brak)',
+        message: message || '(brak)',
       };
+      if (mode === 'existing') {
+        data.current_cost = currentCost + ' zł/mies.';
+        data.ksef_price_change = ksefPriceChange || '(brak)';
+      }
+      if (mode === 'starting') {
+        data.start_timeframe = startTimeframe;
+      }
 
       try {
-        await submitToNetlify(formData);
+        await submitToNetlify(data);
         setSubmitted(true);
       } catch {
         setSubmitError(true);
@@ -121,318 +243,392 @@ export function EstimationForm() {
         setSubmitting(false);
       }
     },
-    [email, phone, companyType, taxForm, invoices, currentCost, result]
+    [mode, companyType, taxForm, vat, documents, hasEmployees, employeesUop, employeesOther, startTimeframe, needs, currentCost, ksefPriceChange, email, phone, message, step3Valid]
   );
 
-  const companyTypes: { value: CompanyType; label: string }[] = [
-    { value: 'jdg', label: 'Jednoosobowa działalność (JDG)' },
-    { value: 'spolka_cywilna', label: 'Spółka cywilna' },
-    { value: 'sp_j', label: 'Spółka jawna / partnerska' },
-    { value: 'inna', label: 'Inna forma' },
-  ];
+  const stepLabels = mode === 'existing'
+    ? ['Profil firmy', 'Zakres i priorytety', 'Cena i kontakt']
+    : ['Planowana firma', 'Zakres i priorytety', 'Kontakt'];
+
+  const currentNeeds = mode === 'existing' ? NEEDS_EXISTING : NEEDS_STARTING;
 
   return (
     <section id="wycena" className="relative py-24 md:py-32 bg-white" ref={ref}>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-xl h-px bg-gradient-to-r from-transparent via-emerald-200 to-transparent" />
 
       <div className="max-w-6xl mx-auto px-6">
-        <div
-          className={`text-center mb-16 transition-all duration-700 ${
-            isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`}
-        >
-          <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3.5 py-1.5 rounded-full text-sm font-medium mb-5">
-            <Calculator size={14} />
-            Darmowa wycena
-          </div>
+        <div className={`text-center mb-12 transition-all duration-700 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight mb-4">
-            Szybka orientacyjna wycena
+            Porównaj cenę księgowości
           </h2>
-          <p className="text-lg text-slate-500 max-w-xl mx-auto">
-            Odpowiedz na kilka pytań — to zajmie minutę. Otrzymasz orientacyjny zakres cenowy dla
-            Twojej działalności.
+          <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+            Podaj kilka informacji o firmie i zaznacz, co jest dla Ciebie ważne. Dzięki temu porównanie
+            uwzględni nie tylko cenę, ale też styl współpracy z biurem.
           </p>
         </div>
 
-        <div
-          className={`max-w-2xl mx-auto transition-all duration-700 delay-200 ${
-            isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`}
-        >
-          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-100/50 p-8 md:p-10">
-            {/* Company Type */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">
-                Rodzaj działalności
-              </label>
-              <select
-                value={companyType}
-                onChange={(e) => setCompanyType(e.target.value as CompanyType)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all appearance-none cursor-pointer"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: 'right 12px center',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundSize: '20px',
-                }}
-              >
-                {companyTypes.map((ct) => (
-                  <option key={ct.value} value={ct.value}>
-                    {ct.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Tax Form Toggle */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">
-                Forma opodatkowania
-              </label>
-              <div className="flex bg-slate-100 rounded-xl p-1.5">
-                <button
-                  type="button"
-                  onClick={() => setTaxForm('ryczalt')}
-                  className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                    taxForm === 'ryczalt'
-                      ? 'bg-white shadow-sm text-slate-900'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  Ryczałt
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTaxForm('kpir')}
-                  className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                    taxForm === 'kpir'
-                      ? 'bg-white shadow-sm text-slate-900'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  KPiR
-                </button>
+        <div className={`max-w-4xl mx-auto transition-all duration-700 delay-200 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          {submitted ? (
+            /* ── Success ── */
+            <div className="bg-white rounded-3xl border border-emerald-200 shadow-xl shadow-emerald-50 p-8 md:p-12 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 size={32} className="text-emerald-600" />
               </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Dziękujemy!</h3>
+              <p className="text-slate-500 leading-relaxed max-w-md mx-auto">
+                Przygotujemy punkt odniesienia na podstawie Twojego profilu i priorytetów. Otrzymasz
+                informacje potrzebne do decyzji — bez lawiny telefonów.
+              </p>
             </div>
+          ) : (
+            <div className="relative overflow-hidden bg-white rounded-[2rem] border-2 border-emerald-200/80 shadow-2xl shadow-emerald-100/60 p-6 md:p-10">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400" />
+              <p className="hidden"><label>Nie wypełniaj: <input name="bot-field" /></label></p>
 
-            {/* Invoices slider */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">
-                Liczba faktur miesięcznie
-              </label>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setInvoices(Math.max(1, invoices - 1))}
-                  className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors flex-shrink-0"
-                >
-                  <Minus size={16} />
-                </button>
-                <div className="flex-1">
-                  <input
-                    type="range"
-                    min="1"
-                    max="80"
-                    value={invoices}
-                    onChange={(e) => setInvoices(parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setInvoices(Math.min(80, invoices + 1))}
-                  className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors flex-shrink-0"
-                >
-                  <Plus size={16} />
-                </button>
-                <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 min-w-[60px] text-center">
-                  {invoices}
-                </div>
-              </div>
-              <div className="flex justify-between text-xs text-slate-400 mt-2 px-14">
-                <span>1</span>
-                <span>80</span>
-              </div>
-            </div>
-
-            {/* Current cost */}
-            <div className="mb-10">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">
-                Obecny koszt księgowości
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={currentCost}
-                  onChange={(e) => setCurrentCost(e.target.value)}
-                  placeholder="np. 400"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 pr-16 text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-medium">
-                  zł/mies.
-                </span>
-              </div>
-            </div>
-
-            {/* Estimate button */}
-            <button
-              type="button"
-              onClick={handleEstimate}
-              disabled={!currentCost || parseFloat(currentCost) <= 0}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white py-4 rounded-2xl text-base font-semibold transition-all duration-300 hover:shadow-xl hover:shadow-emerald-600/20 disabled:hover:shadow-none flex items-center justify-center gap-2 group active:scale-[0.99]"
-            >
-              Pokaż orientacyjną cenę
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
-            </button>
-          </div>
-
-          {/* Result */}
-          {result && (
-            <div className="mt-6 animate-scale-in">
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-100 rounded-3xl p-8 md:p-10">
-                <div className="flex items-start gap-4 mb-6">
-                  <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                      result.overpaying ? 'bg-amber-100' : 'bg-emerald-100'
-                    }`}
-                  >
-                    {result.overpaying ? (
-                      <TrendingDown size={22} className="text-amber-600" />
-                    ) : (
-                      <CheckCircle2 size={22} className="text-emerald-600" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">
-                      {result.overpaying
-                        ? 'Możesz przepłacać za księgowość'
-                        : 'Twoja cena wydaje się adekwatna'}
-                    </h3>
-                    <p className="text-sm text-slate-500">
-                      {result.overpaying
-                        ? 'Na podstawie podanych danych, Twoja cena może być powyżej średniej rynkowej.'
-                        : 'Twoja obecna cena mieści się w typowym zakresie rynkowym dla podobnych firm.'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Price comparison */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                  <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 border border-white">
-                    <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Orientacyjny zakres rynkowy
-                    </span>
-                    <div className="text-2xl font-bold text-emerald-700 mt-2">
-                      {result.low}–{result.high} zł
-                    </div>
-                    <span className="text-sm text-slate-400">za miesiąc</span>
-                  </div>
-                  <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 border border-white">
-                    <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                      Twoja obecna cena
-                    </span>
-                    <div className="text-2xl font-bold text-slate-900 mt-2">
-                      {result.currentCost} zł
-                    </div>
-                    <span className="text-sm text-slate-400">za miesiąc</span>
-                  </div>
-                </div>
-
-                {result.overpaying && result.savingsHigh > 0 && (
-                  <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 border border-emerald-100 mb-6">
-                    <span className="text-sm font-semibold text-emerald-700">
-                      💡 Szacowana potencjalna oszczędność: {result.savingsLow}–{result.savingsHigh} zł miesięcznie
-                    </span>
-                    <p className="text-xs text-slate-400 mt-1">
-                      = {result.savingsLow * 12}–{result.savingsHigh * 12} zł rocznie
-                    </p>
-                  </div>
-                )}
-
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Powyższa wycena ma charakter orientacyjny i nie stanowi oferty handlowej. Dokładna
-                  cena zależy od zakresu usług, regionu i specyfiki działalności.
+              <div className="mb-7 rounded-2xl bg-emerald-50/70 border border-emerald-100 p-4 md:p-5">
+                <p className="text-sm font-bold text-emerald-700 mb-1">
+                  Formularz wyceny
+                </p>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Wybierz swoją sytuację, uzupełnij profil firmy i zaznacz, co jest dla Ciebie ważne. Na tej podstawie przygotujemy wyceny dopasowane do Ciebie.
                 </p>
               </div>
 
-              {/* Contact form — Netlify Forms */}
-              <form
-                onSubmit={handleContactSubmit}
-                name={NETLIFY_FORM_NAME}
-                className="mt-6 bg-white rounded-3xl border border-slate-200/80 shadow-lg shadow-slate-100/50 p-8"
-              >
-                {/* Honeypot — protection against bots */}
-                <p className="hidden">
-                  <label>
-                    Nie wypełniaj tego pola: <input name="bot-field" />
-                  </label>
-                </p>
-
-                <h3 className="text-base font-bold text-slate-900 mb-1">
-                  Chcesz otrzymać konkretne oferty?
-                </h3>
-                <p className="text-sm text-slate-500 mb-6">
-                  Zostaw kontakt — prześlemy Ci dopasowane propozycje od sprawdzonych księgowych.
-                </p>
-
-                {submitted ? (
-                  <div className="text-center py-6">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle2 size={28} className="text-emerald-600" />
-                    </div>
-                    <p className="font-semibold text-slate-900">Dziękujemy!</p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      Skontaktujemy się z Tobą wkrótce z dopasowanymi propozycjami.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {submitError && (
-                      <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600">
-                        Wystąpił błąd przy wysyłce. Spróbuj ponownie za chwilę.
-                      </div>
-                    )}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                      <input
-                        type="email"
-                        name="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
-                      />
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Telefon (opcjonalnie)"
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
-                      />
-                    </div>
+              {/* ── Mode selector ── */}
+              <div className="mb-8">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">Jaka jest Twoja sytuacja?</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {([
+                    { m: 'existing' as Mode, title: 'Mam firmę', desc: 'Porównaj obecną cenę księgowości z możliwościami dopasowanymi do profilu Twojej firmy.' },
+                    { m: 'starting' as Mode, title: 'Zakładam firmę', desc: 'Oszacuj koszt księgowości przed wyborem biura lub startem działalności.' },
+                  ]).map((opt) => (
                     <button
-                      type="submit"
-                      disabled={(!email && !phone) || submitting}
-                      className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white py-3.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
+                      key={opt.m}
+                      type="button"
+                      onClick={() => handleModeSelect(opt.m)}
+                      className={`text-left p-5 rounded-2xl border-2 transition-all ${
+                        mode === opt.m
+                          ? 'border-emerald-400 bg-emerald-50/50 shadow-sm'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                      }`}
                     >
-                      {submitting ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin" />
-                          Wysyłanie...
-                        </>
-                      ) : (
-                        <>
-                          Wyślij zapytanie — bez zobowiązań
-                          <ArrowRight size={16} />
-                        </>
-                      )}
+                      <span className={`text-sm font-bold ${mode === opt.m ? 'text-emerald-700' : 'text-slate-800'}`}>
+                        {opt.title}
+                      </span>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{opt.desc}</p>
                     </button>
-                    <p className="text-xs text-slate-400 text-center mt-3">
-                      Nie spamujemy. Odpowiadamy tylko z konkretnymi propozycjami.
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Step indicator ── */}
+              {step > 0 && <StepIndicator step={step} labels={stepLabels} />}
+
+              {/* ════════ STEP 1 ════════ */}
+              {step === 1 && (
+                <div className="space-y-7 animate-fade-in">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      {mode === 'existing' ? 'Forma działalności' : 'Planowana forma działalności'}
+                    </label>
+                    <OptionGroup
+                      options={mode === 'starting' ? COMPANY_TYPES_STARTING : COMPANY_TYPES}
+                      value={companyType}
+                      onChange={setCompanyType}
+                      columns={2}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      {mode === 'existing' ? 'Forma rozliczenia' : 'Planowana forma rozliczenia'}
+                    </label>
+                    <OptionGroup options={TAX_FORMS} value={taxForm} onChange={setTaxForm} columns={2} />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">VAT</label>
+                    <OptionGroup options={VAT_OPTS} value={vat} onChange={setVat} columns={3} />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      {mode === 'existing' ? 'Liczba dokumentów miesięcznie' : 'Szacowana liczba dokumentów miesięcznie'}
+                    </label>
+                    <OptionGroup
+                      options={mode === 'starting' ? DOC_RANGES_STARTING : DOC_RANGES}
+                      value={documents}
+                      onChange={setDocuments}
+                      columns={3}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ════════ STEP 2 ════════ */}
+              {step === 2 && (
+                <div className="space-y-7 animate-fade-in">
+                  {/* Employment */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      {mode === 'existing'
+                        ? 'Czy zatrudniasz pracowników lub współpracowników?'
+                        : 'Czy planujesz zatrudniać pracowników lub współpracowników?'}
+                    </label>
+                    <OptionGroup
+                      options={mode === 'starting' ? EMPLOYMENT_OPTS_S : EMPLOYMENT_OPTS_E}
+                      value={hasEmployees}
+                      onChange={setHasEmployees}
+                      columns={3}
+                    />
+                  </div>
+
+                  {hasEmployees === 'Tak' && (
+                    <div className="grid grid-cols-2 gap-4 animate-fade-in">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          {mode === 'existing' ? 'Pracownicy na UoP' : 'Planowani pracownicy na UoP'}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={employeesUop}
+                          onChange={(e) => setEmployeesUop(e.target.value)}
+                          placeholder="0"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          {mode === 'existing' ? 'Umowy zlecenia / inne' : 'Planowane umowy zlecenia / inne'}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={employeesOther}
+                          onChange={(e) => setEmployeesOther(e.target.value)}
+                          placeholder="0"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Start timeframe (starting only) */}
+                  {mode === 'starting' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-3">
+                        Kiedy planujesz rozpocząć działalność?
+                      </label>
+                      <div className="space-y-2">
+                        {START_TIMEFRAMES.map((tf) => (
+                          <button
+                            key={tf}
+                            type="button"
+                            onClick={() => setStartTimeframe(tf)}
+                            className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                              startTimeframe === tf
+                                ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                            }`}
+                          >
+                            {tf}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Needs */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      {mode === 'existing'
+                        ? 'Co jest dla Ciebie najważniejsze we współpracy z księgowością?'
+                        : 'Co będzie dla Ciebie najważniejsze przy wyborze księgowości?'}
+                    </label>
+                    <p className="text-xs text-slate-400 mb-4">
+                      Wybierz 3–5 rzeczy, które mają największe znaczenie.
                     </p>
-                  </>
-                )}
-              </form>
+
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {currentNeeds.map((need) => {
+                        const selected = needs.includes(need);
+                        const disabled = !selected && needs.length >= 5;
+                        return (
+                          <button
+                            key={need}
+                            type="button"
+                            onClick={() => !disabled && toggleNeed(need)}
+                            disabled={disabled}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-medium border transition-all ${
+                              selected
+                                ? 'bg-emerald-50 border-emerald-300 text-emerald-700 shadow-sm'
+                                : disabled
+                                  ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed'
+                                  : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                            }`}
+                          >
+                            {need}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      Wybrano {needs.length}/5 {needs.length < 3 && '— wybierz co najmniej 3'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* ════════ STEP 3 ════════ */}
+              {step === 3 && (
+                <form onSubmit={handleSubmit} className="space-y-7 animate-fade-in">
+                  {/* Existing: price fields */}
+                  {mode === 'existing' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Ile obecnie płacisz miesięcznie za księgowość?
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={currentCost}
+                            onChange={(e) => setCurrentCost(e.target.value)}
+                            placeholder="np. 450"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 pr-16 text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-medium">zł netto</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-3">
+                          Czy cena obsługi zmieniła się w związku z KSeF?
+                        </label>
+                        <OptionGroup options={KSEF_OPTS} value={ksefPriceChange} onChange={setKsefPriceChange} columns={2} />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Contact */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Adres e-mail</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="twoj@email.pl"
+                      required
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Telefon — opcjonalnie</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="500 123 456"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Jaka jest Twoja sytuacja?</label>
+                    <textarea
+                      name="message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      rows={3}
+                      placeholder={mode === 'existing'
+                        ? 'np. czy obecna cena jest wysoka, czy warto zmienić biuro, czy można znaleźć lepiej dopasowaną obsługę'
+                        : 'np. ile może kosztować księgowość, jaką formę działalności wybrać, czy warto być VAT-owcem'
+                      }
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300 resize-none"
+                    />
+                  </div>
+
+                  {submitError && (
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600">
+                      Wystąpił błąd. Spróbuj ponownie za chwilę.
+                    </div>
+                  )}
+
+                  {/* Trust box */}
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Nie udostępniamy Twoich danych biurom rachunkowym. Otrzymujesz informacje potrzebne do decyzji.
+                    </p>
+                  </div>
+
+                  {/* Submit */}
+                  <button
+                    type="submit"
+                    disabled={!step3Valid || submitting}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white py-4 rounded-2xl text-base font-semibold transition-all duration-300 hover:shadow-xl hover:shadow-emerald-600/20 disabled:hover:shadow-none flex items-center justify-center gap-2 group active:scale-[0.99]"
+                  >
+                    {submitting ? (
+                      <><Loader2 size={18} className="animate-spin" /> Wysyłanie...</>
+                    ) : (
+                      <>
+                        {mode === 'existing' ? 'Porównaj moją cenę' : 'Oszacuj koszt księgowości'}
+                        <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
+                      </>
+                    )}
+                  </button>
+
+                  <p className="text-xs text-slate-400 text-center">
+                    {mode === 'existing'
+                      ? 'Najpierw sprawdzasz, czy obecna cena i zakres obsługi mają sens. Potem sam decydujesz, z kim chcesz rozmawiać.'
+                      : 'Otrzymasz punkt odniesienia przed wyborem biura lub startem działalności.'}
+                  </p>
+                </form>
+              )}
+
+              {/* ── Navigation buttons (steps 1-2) ── */}
+              {step > 0 && step < 3 && (
+                <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
+                  {step > 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => setStep(step - 1)}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
+                    >
+                      <ArrowLeft size={16} /> Wstecz
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (step === 1 && step1Valid) setStep(2);
+                      if (step === 2 && step2Valid) setStep(3);
+                    }}
+                    disabled={(step === 1 && !step1Valid) || (step === 2 && !step2Valid)}
+                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all disabled:hover:shadow-none hover:shadow-lg hover:shadow-emerald-600/20"
+                  >
+                    Dalej <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+
+              {/* Back from step 3 */}
+              {step === 3 && !submitted && (
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <ArrowLeft size={16} /> Wstecz
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
