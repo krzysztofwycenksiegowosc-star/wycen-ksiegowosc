@@ -3,25 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Sprawdź, czy nie przepłacasz za księgowość. Orientacyjna wycena usług księgowych dla małych firm po KSeF. Porównaj ceny, podejmij świadomą decyzję." />
-    <title>WycenKsięgowość.pl — Czy nie przepłacasz za księgowość?</title>
+    <meta name="description" content="Sprawdź, czy po KSeF-ie nie przepłacasz za księgowość. Porównaj cenę bez udostępniania danych biurom i bez lawiny telefonów." />
+    <title>WyceńKsięgowość — Porównaj koszt księgowości po KSeF</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <!-- Netlify Forms: ukryty formularz wymagany do detekcji przez Netlify -->
     <form name="wycena-kontakt" data-netlify="true" netlify-honeypot="bot-field" hidden>
       <input type="text" name="bot-field" />
       <input type="email" name="email" />
       <input type="tel" name="phone" />
+      <input type="text" name="mode" />
       <input type="text" name="company_type" />
       <input type="text" name="tax_form" />
-      <input type="text" name="invoices_per_month" />
+      <input type="text" name="vat" />
+      <input type="text" name="documents" />
+      <input type="text" name="has_employees" />
+      <input type="text" name="employees_uop" />
+      <input type="text" name="employees_other" />
+      <input type="text" name="start_timeframe" />
+      <input type="text" name="needs" />
       <input type="text" name="current_cost" />
-      <input type="text" name="estimated_range" />
-      <input type="text" name="overpaying" />
-      <input type="text" name="potential_savings" />
+      <input type="text" name="ksef_price_change" />
+      <input type="text" name="message" />
     </form>
 
     <div id="root"></div>

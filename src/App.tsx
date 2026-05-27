@@ -1,9 +1,10 @@
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
 import { EstimationForm } from './components/EstimationForm';
-import { MarketInsights } from './components/MarketInsights';
+import { Benefits } from './components/Benefits';
 import { WhyNotChange } from './components/WhyNotChange';
 import { FounderSection } from './components/FounderSection';
+import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
 
 function App() {
@@ -13,9 +14,10 @@ function App() {
       <main>
         <HeroSection />
         <EstimationForm />
-        <MarketInsights />
+        <Benefits />
         <WhyNotChange />
         <FounderSection />
+        <FinalCTA />
       </main>
       <Footer />
     </div>

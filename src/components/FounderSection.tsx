@@ -1,48 +1,80 @@
 import { useInView } from '../hooks/useInView';
-import { MessageCircle } from 'lucide-react';
+import { ShieldCheck, PhoneOff, UserCheck } from 'lucide-react';
+
+const principles = [
+  {
+    icon: ShieldCheck,
+    title: 'Bez presji',
+  },
+  {
+    icon: PhoneOff,
+    title: 'Bez sprzedażowej karuzeli',
+  },
+  {
+    icon: UserCheck,
+    title: 'Bez udostępniania Twoich danych biurom',
+  },
+];
 
 export function FounderSection() {
   const { ref, isInView } = useInView();
 
   return (
-    <section className="py-24 md:py-32 bg-gradient-to-b from-white to-slate-50/50" ref={ref}>
+    <section className="py-20 md:py-28 bg-white" ref={ref}>
       <div className="max-w-6xl mx-auto px-6">
         <div
-          className={`max-w-2xl mx-auto text-center transition-all duration-700 ${
+          className={`rounded-[2.25rem] bg-gradient-to-br from-slate-50 via-white to-emerald-50/70 border border-slate-200/70 shadow-sm px-6 py-10 md:px-12 md:py-14 transition-all duration-700 ${
             isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
-          {/* Avatar */}
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 mx-auto mb-6 flex items-center justify-center shadow-lg shadow-emerald-600/20">
-            <span className="text-white text-2xl font-bold">MK</span>
+          <div className="max-w-4xl mx-auto text-center">
+            <span className="inline-flex items-center justify-center rounded-full bg-emerald-50 border border-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700 mb-6">
+              Dlaczego powstało WyceńKsięgowość?
+            </span>
+
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight mb-8">
+              Żeby porównywać księgowość na własnych warunkach
+            </h2>
           </div>
 
-          <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3.5 py-1.5 rounded-full text-sm font-medium mb-6">
-            <MessageCircle size={14} />
-            Dlaczego stworzyłem WycenKsiegowosc.pl?
+          <div className="max-w-4xl mx-auto rounded-3xl bg-white/80 border border-slate-200/70 shadow-sm p-6 md:p-8">
+            <div className="space-y-5 text-left">
+              <div className="flex gap-4">
+                <div className="mt-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500 shrink-0" />
+                <p className="text-base md:text-lg text-slate-600 leading-relaxed">
+                  Wybór księgowości to trudna i odpowiedzialna decyzja. Wymaga czasu, porównania i spokojnej analizy.
+                </p>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="mt-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500 shrink-0" />
+                <p className="text-base md:text-lg text-slate-600 leading-relaxed">
+                  Przypadkowe oferty rzadko pomagają. Presja sprzedawców jeszcze mniej. Dlatego najpierw dostajesz orientację w cenach i dostępnych opcjach — bez zmuszania do kontaktu.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-emerald-50/80 border border-emerald-100 px-5 py-4">
+                <p className="text-lg md:text-xl font-bold text-slate-900 text-center">
+                  Sprawdzasz. Porównujesz. Decydujesz sam.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <blockquote className="text-xl md:text-2xl font-medium text-slate-800 leading-relaxed mb-6">
-            „Po rozmowach z przedsiębiorcami zauważyłem, że wiele firm kompletnie nie wie dziś, czy płaci za księgowość uczciwą stawkę — szczególnie po zmianach związanych z KSeF.
-
-Powstał chaos:
-duże rozbieżności cenowe, podwyżki bez jasnego uzasadnienia i ogromna niepewność przy zmianie biura.
-
-WycenKsiegowosc.pl powstało po to, żeby uporządkować ten rynek i pomóc przedsiębiorcom podejmować spokojniejsze decyzje."
-          </blockquote>
-
-          <div>
-            <p className="font-semibold text-slate-900">Marcin Kowalski</p>
-            <p className="text-sm text-slate-400 mt-1">
-              Twórca WycenKsięgowość.pl · przedsiębiorca od 2016 r.
-            </p>
-          </div>
-
-          <div className="mt-10 pt-8 border-t border-slate-100">
-            <p className="text-sm text-slate-400 leading-relaxed max-w-lg mx-auto">
-              Nie jesteśmy korporacją ani biurem księgowym. Jesteśmy narzędziem, które pomaga
-              przedsiębiorcom podejmować lepsze decyzje — na podstawie danych, nie obaw.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            {principles.map((principle) => (
+              <div
+                key={principle.title}
+                className="rounded-2xl bg-white/80 border border-emerald-100 p-5 text-center shadow-sm"
+              >
+                <div className="w-11 h-11 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+                  <principle.icon size={19} className="text-emerald-600" />
+                </div>
+                <p className="text-sm md:text-base font-semibold text-slate-800">
+                  {principle.title}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
