@@ -301,11 +301,11 @@ export function EstimationForm() {
   }, [isSpZoo, taxForm]);
 
   return (
-    <section id="wycena" className="relative py-24 md:py-32 bg-white" ref={ref}>
+    <section id="wycena" className="relative py-16 md:py-32 bg-white" ref={ref}>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-xl h-px bg-gradient-to-r from-transparent via-emerald-200 to-transparent" />
 
       <div className="max-w-6xl mx-auto px-6">
-        <div className={`text-center mb-12 transition-all duration-700 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+        <div className={`text-center mb-8 md:mb-12 transition-all duration-700 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight mb-4">
             Porównaj cenę księgowości
           </h2>
@@ -406,6 +406,12 @@ export function EstimationForm() {
                     ×
                   </button>
                 )}
+              </div>
+
+              <div className="mb-6 rounded-2xl bg-emerald-50/80 border border-emerald-100 px-4 py-3.5 md:px-5 md:py-4">
+                <p className="text-sm md:text-base font-semibold text-emerald-800 leading-relaxed">
+                  Nie udostępniamy Twoich danych. Otrzymujesz wyceny — Ty decydujesz, z kim rozmawiać dalej.
+                </p>
               </div>
 
               {/* ── Step indicator ── */}
@@ -709,7 +715,7 @@ export function EstimationForm() {
                   {/* Trust box */}
                   <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                     <p className="text-xs text-slate-500 leading-relaxed">
-                      Nie udostępniamy Twoich danych biurom rachunkowym. Otrzymujesz informacje potrzebne do decyzji.
+                      Nie udostępniamy Twoich danych. Otrzymujesz wyceny — Ty decydujesz, z kim rozmawiać dalej.
                     </p>
                   </div>
 

@@ -18,10 +18,10 @@ export function WhyNotChange() {
   const { ref, isInView } = useInView();
 
   return (
-    <section id="zmiana-biura" className="py-20 md:py-24 bg-white" ref={ref}>
+    <section id="zmiana-biura" className="py-16 md:py-24 bg-white" ref={ref}>
       <div className="max-w-6xl mx-auto px-6">
         <div
-          className={`text-center mb-12 transition-all duration-700 ${
+          className={`text-center mb-8 md:mb-12 transition-all duration-700 ${
             isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
@@ -43,17 +43,21 @@ export function WhyNotChange() {
               }`}
               style={{ transitionDelay: isInView ? `${index * 120 + 150}ms` : '0ms' }}
             >
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6">
-                <block.icon size={21} className="text-emerald-600" />
+              <div className="flex items-start gap-4 md:block">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0 md:mb-6">
+                  <block.icon size={21} className="text-emerald-600" />
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-3">
+                    {block.title}
+                  </h3>
+
+                  <p className="text-base text-slate-500 leading-relaxed">
+                    {block.desc}
+                  </p>
+                </div>
               </div>
-
-              <h3 className="text-lg font-bold text-slate-900 mb-3">
-                {block.title}
-              </h3>
-
-              <p className="text-base text-slate-500 leading-relaxed">
-                {block.desc}
-              </p>
             </div>
           ))}
         </div>

@@ -38,7 +38,7 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center pt-[72px] overflow-hidden" ref={ref}>
+    <section className="relative lg:min-h-screen flex items-center pt-[72px] overflow-hidden" ref={ref}>
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[700px] h-[700px] bg-gradient-to-bl from-emerald-50/80 via-emerald-100/30 to-transparent rounded-full blur-3xl" />
         <div className="absolute bottom-[-5%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-amber-50/30 via-teal-50/15 to-transparent rounded-full blur-3xl" />
@@ -51,7 +51,7 @@ export function HeroSection() {
         />
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-20 md:py-24 relative w-full">
+      <div className="max-w-6xl mx-auto px-6 py-12 md:py-24 relative w-full">
         <div className="grid grid-cols-1 lg:grid-cols-[1.45fr_0.9fr] gap-10 lg:gap-14 items-center">
           {/* Copy */}
           <div className={`transition-all duration-1000 ease-out ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>

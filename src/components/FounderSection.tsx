@@ -10,7 +10,7 @@ export function FounderSection() {
   };
 
   return (
-    <section className="py-20 md:py-28 bg-white" ref={ref}>
+    <section className="py-16 md:py-28 bg-white" ref={ref}>
       <div className="max-w-6xl mx-auto px-6">
         <div
           className={`rounded-[2.25rem] bg-gradient-to-br from-slate-50 via-white to-emerald-50/70 border border-slate-200/70 shadow-sm px-6 py-12 md:px-12 md:py-16 text-center transition-all duration-700 ${
@@ -47,21 +47,21 @@ export function FounderSection() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto mb-5">
             <button
               onClick={() => scrollToForm('existing')}
-              className="group inline-flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white px-7 py-5 rounded-2xl text-base font-semibold transition-all duration-300 hover:shadow-xl hover:shadow-emerald-600/20 hover:-translate-y-0.5"
+              className="group inline-flex w-full min-h-[60px] items-center justify-center gap-2 sm:gap-3 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-4 sm:px-7 sm:py-5 rounded-2xl text-sm sm:text-base font-semibold leading-tight transition-all duration-300 hover:shadow-xl hover:shadow-emerald-600/20 hover:-translate-y-0.5"
             >
-              <span>Masz firmę? — Wyceń i porównaj</span>
-              <ArrowRight size={18} className="shrink-0 transition-transform group-hover:translate-x-1" />
+              <span className="block text-center">Masz firmę? — Wyceń i porównaj</span>
+              <ArrowRight size={18} className="hidden sm:block shrink-0 transition-transform group-hover:translate-x-1" />
             </button>
 
             <button
               onClick={() => scrollToForm('starting')}
-              className="group inline-flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 px-7 py-5 rounded-2xl text-base font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+              className="group inline-flex w-full min-h-[60px] items-center justify-center gap-2 sm:gap-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 px-5 py-4 sm:px-7 sm:py-5 rounded-2xl text-sm sm:text-base font-semibold leading-tight transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
             >
-              <span>Zakładasz firmę? — Oszacuj koszt</span>
-              <ArrowRight size={18} className="shrink-0 transition-transform group-hover:translate-x-1" />
+              <span className="block text-center">Zakładasz firmę? — Oszacuj koszt</span>
+              <ArrowRight size={18} className="hidden sm:block shrink-0 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
 

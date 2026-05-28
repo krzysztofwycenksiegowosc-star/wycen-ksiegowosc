@@ -44,14 +44,14 @@ export function Benefits() {
   const { ref, isInView } = useInView();
 
   return (
-    <section id="jak-to-dziala" className="py-20 md:py-24 bg-slate-50/50" ref={ref}>
+    <section id="jak-to-dziala" className="py-16 md:py-24 bg-slate-50/50" ref={ref}>
       <div className="max-w-6xl mx-auto px-6">
         <div
           className={`rounded-[2.25rem] bg-white border border-slate-200/80 shadow-sm px-5 py-10 md:px-10 md:py-14 transition-all duration-700 ${
             isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
-          <div className="text-center mb-11">
+          <div className="text-center mb-8 md:mb-11">
             <span className="inline-flex items-center justify-center rounded-full bg-emerald-50 border border-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700 mb-6">
               Jak to działa
             </span>
