@@ -1,5 +1,5 @@
 import { useInView } from '../hooks/useInView';
-import { ClipboardList, BarChart3, UserCheck, ArrowRight, PhoneOff, Target, Sparkles } from 'lucide-react';
+import { ArrowRight, ClipboardList, BarChart3, UserCheck, ShieldCheck, Target, Compass } from 'lucide-react';
 
 const steps = [
   {
@@ -12,7 +12,7 @@ const steps = [
     icon: BarChart3,
     number: '02',
     title: 'Analizujemy i proponujemy',
-    desc: 'Przeglądamy oferty za Ciebie. Wskazujemy biura rachunkowe, odpowiadające Twoim priorytetom. Otrzymujesz aktualne rynkowe wyceny.',
+    desc: 'Przeglądamy oferty za Ciebie. Wskazujemy biura rachunkowe odpowiadające Twoim priorytetom. Otrzymujesz aktualne rynkowe wyceny.',
   },
   {
     icon: UserCheck,
@@ -22,21 +22,21 @@ const steps = [
   },
 ];
 
-const benefits = [
+const gains = [
   {
-    icon: PhoneOff,
-    title: 'Bez lawiny telefonów',
-    desc: 'Nie trafiasz do sprzedażowej karuzeli. Najpierw dostajesz niezobowiązujące wyceny. Decyzję o kontakcie podejmujesz sam.',
+    icon: ShieldCheck,
+    title: 'Zero presji sprzedażowej',
+    desc: 'Spokojnie analizujesz niezobowiązujące wyceny.',
   },
   {
     icon: Target,
     title: 'Wyceny dopasowane do Ciebie',
-    desc: 'Cena ma znaczenie, ale nie jest jedynym kryterium. Dlatego zależy nam na poznaniu Twoich priorytetów.',
+    desc: 'Dlatego zależy nam na poznaniu Twoich priorytetów.',
   },
   {
-    icon: Sparkles,
-    title: 'Zawsze zyskujesz',
-    desc: 'Dzięki wycenie wiesz, czy oferta, z której korzystasz albo którą rozważasz, naprawdę ma sens. Możesz podjąć lepszą decyzję.',
+    icon: Compass,
+    title: 'Wsparcie w decyzji',
+    desc: 'Widzisz, czy obecna albo rozważana oferta naprawdę ma sens.',
   },
 ];
 
@@ -61,69 +61,93 @@ export function Benefits() {
             </h2>
 
             <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-              Nie uruchamiasz lawiny telefonów. Kontaktujesz się tylko wtedy, gdy widzisz sens rozmowy z wybranym biurem.
+              Bez niechcianych telefonów, maili i wiadomości. Kontaktujesz się tylko wtedy, gdy widzisz sens rozmowy z wybranym biurem.
             </p>
           </div>
 
-          {/* Process */}
-          <div className="relative">
-            <div className="hidden md:block absolute top-1/2 left-[18%] right-[18%] h-px bg-gradient-to-r from-emerald-100 via-emerald-300 to-emerald-100 -translate-y-1/2" />
+          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-7 md:gap-8 items-stretch">
+            {/* Process path */}
+            <div className="rounded-[2rem] bg-slate-50/80 border border-slate-200/80 p-6 md:p-8">
+              <div className="mb-7">
+                <p className="text-sm font-bold text-emerald-700 mb-2">
+                  Proces
+                </p>
+                <h3 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+                  Trzy proste kroki
+                </h3>
+              </div>
 
-            <div className="relative grid grid-cols-1 md:grid-cols-3 gap-5">
-              {steps.map((step, index) => (
-                <div key={step.title} className="relative">
-                  <div className="bg-slate-50/80 rounded-[2rem] border border-slate-200/80 p-7 md:p-8 h-full">
-                    <div className="flex items-center justify-between mb-6">
-                      <span className="text-3xl md:text-4xl font-black tracking-tight text-emerald-600">
+              <div className="relative space-y-6">
+                <div className="absolute left-[21px] top-10 bottom-10 w-px bg-gradient-to-b from-emerald-100 via-emerald-300 to-emerald-100" />
+
+                {steps.map((step) => (
+                  <div key={step.number} className="relative flex gap-5">
+                    <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white border border-emerald-100 shadow-sm">
+                      <span className="text-sm font-black text-emerald-600">
                         {step.number}
                       </span>
-                      <div className="w-12 h-12 rounded-2xl bg-white border border-emerald-100 flex items-center justify-center shadow-sm">
-                        <step.icon size={20} className="text-emerald-600" />
+                    </div>
+
+                    <div className="pb-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="text-lg font-bold text-slate-900">
+                          {step.title}
+                        </h4>
+                        <div className="hidden sm:flex h-9 w-9 items-center justify-center rounded-xl bg-white border border-slate-100">
+                          <step.icon size={17} className="text-emerald-600" />
+                        </div>
+                      </div>
+
+                      <p className="text-sm md:text-base text-slate-500 leading-relaxed">
+                        {step.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Gains panel */}
+            <div className="rounded-[2rem] bg-emerald-50/70 border border-emerald-100 p-6 md:p-8">
+              <div className="mb-7">
+                <p className="text-sm font-bold text-emerald-700 mb-2">
+                  Co zyskujesz?
+                </p>
+                <h3 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+                  Komfort wyboru
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                {gains.map((gain) => (
+                  <div
+                    key={gain.title}
+                    className="rounded-2xl bg-white/80 border border-emerald-100 p-5 shadow-sm"
+                  >
+                    <div className="flex gap-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 border border-emerald-100">
+                        <gain.icon size={18} className="text-emerald-600" />
+                      </div>
+
+                      <div>
+                        <h4 className="text-base font-bold text-slate-900 mb-1.5">
+                          {gain.title}
+                        </h4>
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                          {gain.desc}
+                        </p>
                       </div>
                     </div>
-
-                    <h3 className="text-lg font-bold text-slate-900 mb-3">
-                      {step.title}
-                    </h3>
-
-                    <p className="text-sm text-slate-500 leading-relaxed">
-                      {step.desc}
-                    </p>
                   </div>
+                ))}
+              </div>
 
-                  {index < steps.length - 1 && (
-                    <div className="hidden md:flex absolute top-1/2 -right-6 z-10 w-12 h-12 rounded-full bg-white border border-emerald-100 shadow-sm items-center justify-center -translate-y-1/2">
-                      <ArrowRight size={19} className="text-emerald-600" />
-                    </div>
-                  )}
-                </div>
-              ))}
+              <p className="mt-6 text-sm text-emerald-800/80 leading-relaxed">
+                Najpierw dostajesz obraz dostępnych możliwości. Dopiero potem decydujesz, czy chcesz z kimś rozmawiać.
+              </p>
             </div>
           </div>
 
-          {/* Benefits */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">
-            {benefits.map((benefit) => (
-              <div
-                key={benefit.title}
-                className="rounded-3xl bg-emerald-50/60 border border-emerald-100 p-7 md:p-8 text-center"
-              >
-                <div className="w-11 h-11 rounded-2xl bg-white/80 border border-emerald-100 flex items-center justify-center mx-auto mb-5">
-                  <benefit.icon size={19} className="text-emerald-600" />
-                </div>
-
-                <h3 className="text-lg font-bold text-slate-900 mb-3">
-                  {benefit.title}
-                </h3>
-
-                <p className="text-sm md:text-base text-slate-600 leading-relaxed">
-                  {benefit.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* CTA */}
           <div className="text-center mt-10">
             <button
               onClick={() => {
