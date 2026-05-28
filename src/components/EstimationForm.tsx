@@ -322,11 +322,13 @@ export function EstimationForm() {
               <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-6">
                 <CheckCircle2 size={32} className="text-emerald-600" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Dziękujemy!</h3>
-              <div className="text-slate-500 leading-relaxed max-w-md mx-auto space-y-3">
-                <p>Dziękujemy. Gromadzimy i sprawdzamy wyceny dla Ciebie.</p>
-                <p>Dopasujemy je do Twojej działalności i priorytetów.</p>
-                <p>Otrzymasz je mailem z adresu <span className="font-semibold text-slate-700">twojawycena@wycenksiegowosc.pl</span>.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Dziękujemy!</h3>              <div className="text-slate-500 leading-relaxed max-w-md mx-auto space-y-3">
+                <p>Teraz zbieramy wyceny dla Ciebie.</p>
+                <p>Następnie wybierzemy te, które odpowiadają Twoim priorytetom.</p>
+                <p>
+                  <span className="font-semibold text-slate-700">Wyceny otrzymasz mailem z adresu</span>{' '}
+                  <span className="font-semibold text-slate-700">twojawycena@wycenksiegowosc.pl</span>.
+                </p>
                 <p>Sprawdź też folder Oferty, Inne lub Spam.</p>
               </div>
             </div>

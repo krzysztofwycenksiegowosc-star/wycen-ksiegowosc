@@ -12,7 +12,7 @@ export function Header() {
   }, []);
 
   const scrollToForm = (formMode: 'existing' | 'starting') => {
-    window.dispatchEvent(new CustomEvent('wk-form-mode', { detail: formMode }));
+    window.dispatchEvent(new CustomEvent('wk-form-mode', { detail: 'reset' }));
     document.getElementById('wycena')?.scrollIntoView({ behavior: 'smooth' });
     setMenuOpen(false);
   };

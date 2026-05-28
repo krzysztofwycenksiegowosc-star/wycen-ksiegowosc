@@ -1,5 +1,5 @@
 import { useInView } from '../hooks/useInView';
-import { ArrowRight, ShieldCheck, PhoneOff, UserCheck } from 'lucide-react';
+import { ArrowRight, ShieldCheck, PhoneOff } from 'lucide-react';
 
 const heroSteps = [
   {
@@ -19,15 +19,11 @@ const heroSteps = [
 const trustChips = [
   {
     icon: ShieldCheck,
-    label: 'Bez udostępniania danych',
+    label: 'Twoje dane są bezpieczne',
   },
   {
     icon: PhoneOff,
-    label: 'Bez lawiny telefonów i maili',
-  },
-  {
-    icon: UserCheck,
-    label: 'Bez presji',
+    label: 'Zero niechcianych kontaktów',
   },
 ];
 
@@ -104,7 +100,7 @@ export function HeroSection() {
 
               <div className="relative rounded-[2rem] border border-emerald-100 bg-white/90 backdrop-blur-xl shadow-2xl shadow-emerald-100/70 p-6 md:p-7">
                 <h2 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight mb-6">
-                  Wycena bez sprzedażowego chaosu
+                  Wycena bez udostępniania Twoich danych
                 </h2>
 
                 <div className="space-y-3">
