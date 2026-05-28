@@ -115,6 +115,7 @@ export function EstimationForm() {
 
   // Mode & step
   const [mode, setMode] = useState<Mode>('existing');
+  const [modeSelected, setModeSelected] = useState(false);
   const [step, setStep] = useState(1); // 1-3 = active form steps
 
   // Step 1
@@ -129,6 +130,7 @@ export function EstimationForm() {
   const [employeesOther, setEmployeesOther] = useState('');
   const [startTimeframe, setStartTimeframe] = useState('');
   const [needs, setNeeds] = useState<string[]>([]);
+  const [customNeed, setCustomNeed] = useState('');
 
   // Step 3
   const [currentCost, setCurrentCost] = useState('');
@@ -145,9 +147,33 @@ export function EstimationForm() {
   // Listen for mode changes from Hero/FinalCTA
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as Mode;
+      const detail = (e as CustomEvent).detail as Mode | 'reset';
+      if (detail === 'reset') {
+        setMode('existing');
+        setModeSelected(false);
+        setStep(1);
+        setCompanyType('');
+        setTaxForm('');
+        setVat('');
+        setDocuments('');
+        setHasEmployees('');
+        setEmployeesUop('');
+        setEmployeesOther('');
+        setStartTimeframe('');
+        setNeeds([]);
+        setCustomNeed('');
+        setCurrentCost('');
+        setKsefPriceChange('');
+        setEmail('');
+        setPhone('');
+        setMessage('');
+        setSubmitted(false);
+        return;
+      }
+
       if (detail === 'existing' || detail === 'starting') {
         setMode(detail);
+        setModeSelected(true);
         setStep(1);
         // Reset fields
         setCompanyType('');
@@ -159,6 +185,8 @@ export function EstimationForm() {
         setEmployeesOther('');
         setStartTimeframe('');
         setNeeds([]);
+    setCustomNeed('');
+        setCustomNeed('');
         setCurrentCost('');
         setKsefPriceChange('');
         setEmail('');
@@ -182,9 +210,21 @@ export function EstimationForm() {
     });
   }, []);
 
+  const addCustomNeed = useCallback(() => {
+    const value = customNeed.trim();
+    if (!value) return;
+    if (needs.length >= 5) return;
+    if (needs.includes(value)) {
+      setCustomNeed('');
+      return;
+    }
+    setNeeds((prev) => [...prev, value]);
+    setCustomNeed('');
+  }, [customNeed, needs]);
+
   const handleModeSelect = (m: Mode) => {
-    if (m === mode && step > 0) return;
     setMode(m);
+    setModeSelected(true);
     setStep(1);
     setCompanyType('');
     setTaxForm('');
@@ -195,6 +235,7 @@ export function EstimationForm() {
     setEmployeesOther('');
     setStartTimeframe('');
     setNeeds([]);
+    setCustomNeed('');
     setCurrentCost('');
     setKsefPriceChange('');
   };
@@ -251,6 +292,13 @@ export function EstimationForm() {
     : ['Planowana firma', 'Zakres i priorytety', 'Kontakt'];
 
   const currentNeeds = mode === 'existing' ? NEEDS_EXISTING : NEEDS_STARTING;
+  const isSpZoo = companyType === 'Spółka z o.o.';
+
+  useEffect(() => {
+    if (isSpZoo && taxForm !== 'Pełna księgowość') {
+      setTaxForm('Pełna księgowość');
+    }
+  }, [isSpZoo, taxForm]);
 
   return (
     <section id="wycena" className="relative py-24 md:py-32 bg-white" ref={ref}>
@@ -283,44 +331,79 @@ export function EstimationForm() {
               </div>
             </div>
           ) : (
-            <div className="relative overflow-hidden bg-white rounded-[2rem] border-2 border-emerald-200/80 shadow-2xl shadow-emerald-100/60 p-6 md:p-10">
+            <div
+              onClick={(e) => {
+                if (!modeSelected && !(e.target as HTMLElement).closest('[data-form-intro="true"]')) {
+                  setModeSelected(true);
+                }
+              }}
+              className="relative overflow-hidden bg-white rounded-[2rem] border-2 border-emerald-200/80 shadow-2xl shadow-emerald-100/60 p-6 md:p-10"
+            >
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400" />
               <p className="hidden"><label>Nie wypełniaj: <input name="bot-field" /></label></p>
 
-              <div className="mb-7 rounded-2xl bg-emerald-50/70 border border-emerald-100 p-4 md:p-5">
-                <p className="text-sm font-bold text-emerald-700 mb-1">
-                  Formularz wyceny
-                </p>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Wybierz swoją sytuację, uzupełnij profil firmy i zaznacz, co jest dla Ciebie ważne. Na tej podstawie przygotujemy wyceny dopasowane do Ciebie.
-                </p>
-              </div>
+              {!modeSelected && (
+                <div data-form-intro="true">
+                  <div className="mb-7 rounded-2xl bg-emerald-50/70 border border-emerald-100 p-4 md:p-5">
+                    <p className="text-sm font-bold text-emerald-700 mb-1">
+                      Formularz wyceny
+                    </p>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      Wybierz swoją sytuację. Potem uzupełnisz profil firmy i zaznaczysz, co jest dla Ciebie ważne.
+                    </p>
+                  </div>
 
-              {/* ── Mode selector ── */}
-              <div className="mb-8">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">Masz uwagi, nietypową sytuację - opisz krótko (opcjonalnie)</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {([
-                    { m: 'existing' as Mode, title: 'Mam firmę', desc: 'Porównaj obecną cenę księgowości z możliwościami dopasowanymi do profilu Twojej firmy.' },
-                    { m: 'starting' as Mode, title: 'Zakładam firmę', desc: 'Oszacuj koszt księgowości przed wyborem biura lub startem działalności.' },
-                  ]).map((opt) => (
-                    <button
-                      key={opt.m}
-                      type="button"
-                      onClick={() => handleModeSelect(opt.m)}
-                      className={`text-left p-5 rounded-2xl border-2 transition-all ${
-                        mode === opt.m
-                          ? 'border-emerald-400 bg-emerald-50/50 shadow-sm'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className={`text-sm font-bold ${mode === opt.m ? 'text-emerald-700' : 'text-slate-800'}`}>
-                        {opt.title}
-                      </span>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{opt.desc}</p>
-                    </button>
-                  ))}
+                  <div className="mb-8">
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
+                      Jaka jest Twoja sytuacja?
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {([
+                        { m: 'existing' as Mode, title: 'Mam firmę', desc: 'Porównaj obecną cenę księgowości z możliwościami dopasowanymi do profilu Twojej firmy.' },
+                        { m: 'starting' as Mode, title: 'Zakładam firmę', desc: 'Oszacuj koszt księgowości przed wyborem biura lub startem działalności.' },
+                      ]).map((opt) => (
+                        <button
+                          key={opt.m}
+                          type="button"
+                          onClick={() => handleModeSelect(opt.m)}
+                          className="text-left p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/40 transition-all"
+                        >
+                          <span className="text-sm font-bold text-slate-800">
+                            {opt.title}
+                          </span>
+                          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{opt.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+              )}
+
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-600 mb-2">
+                    {mode === 'existing' ? 'Formularz wyceny dla istniejącej firmy' : 'Formularz wyceny dla powstającej firmy'}
+                  </p>
+                  <p className="text-sm text-slate-500">
+                    {mode === 'existing'
+                      ? 'Uzupełnij profil firmy i sprawdź, czy obecna obsługa ma sens.'
+                      : 'Opisz planowaną działalność i oszacuj koszt księgowości przed startem.'}
+                  </p>
+                </div>
+
+                {modeSelected && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.reload();
+                    }}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition hover:border-slate-300 hover:text-slate-700 hover:shadow-sm"
+                    aria-label="Zamknij formularz"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
 
               {/* ── Step indicator ── */}
@@ -345,7 +428,19 @@ export function EstimationForm() {
                     <label className="block text-sm font-semibold text-slate-700 mb-3">
                       {mode === 'existing' ? 'Forma rozliczenia' : 'Planowana forma rozliczenia'}
                     </label>
-                    <OptionGroup options={TAX_FORMS} value={taxForm} onChange={setTaxForm} columns={2} />
+
+                    {isSpZoo ? (
+                      <>
+                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm font-semibold text-emerald-700">
+                          Pełna księgowość
+                        </div>
+                        <p className="mt-2 text-xs text-slate-400">
+                          Dla spółki z o.o. właściwa jest pełna księgowość.
+                        </p>
+                      </>
+                    ) : (
+                      <OptionGroup options={TAX_FORMS} value={taxForm} onChange={setTaxForm} columns={2} />
+                    )}
                   </div>
 
                   <div>
@@ -422,13 +517,15 @@ export function EstimationForm() {
                       <label className="block text-sm font-semibold text-slate-700 mb-3">
                         Kiedy planujesz rozpocząć działalność?
                       </label>
-                      <div className="space-y-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {START_TIMEFRAMES.map((tf) => (
                           <button
                             key={tf}
                             type="button"
                             onClick={() => setStartTimeframe(tf)}
-                            className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                            className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                              tf === 'Jeszcze nie wiem' ? 'sm:col-span-2' : ''
+                            } ${
                               startTimeframe === tf
                                 ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
                                 : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
@@ -452,7 +549,7 @@ export function EstimationForm() {
                       Wybierz 3–5 rzeczy, które mają największe znaczenie.
                     </p>
 
-                    <div className="flex flex-wrap gap-2 mb-2">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {currentNeeds.map((need) => {
                         const selected = needs.includes(need);
                         const disabled = !selected && needs.length >= 5;
@@ -475,6 +572,53 @@ export function EstimationForm() {
                         );
                       })}
                     </div>
+
+                    <div className="rounded-2xl bg-slate-50/70 border border-slate-200 p-4 mb-3">
+                      <label className="block text-xs font-semibold text-slate-600 mb-2">
+                        Chcesz dodać własny priorytet?
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="text"
+                          value={customNeed}
+                          onChange={(e) => setCustomNeed(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addCustomNeed();
+                            }
+                          }}
+                          disabled={needs.length >= 5}
+                          placeholder="np. obsługa po angielsku, e-commerce, raporty miesięczne"
+                          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 disabled:bg-slate-100 disabled:text-slate-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={addCustomNeed}
+                          disabled={!customNeed.trim() || needs.length >= 5}
+                          className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold transition hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed"
+                        >
+                          Dodaj
+                        </button>
+                      </div>
+
+                      {needs.filter((need) => !currentNeeds.includes(need)).length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {needs.filter((need) => !currentNeeds.includes(need)).map((need) => (
+                            <button
+                              key={need}
+                              type="button"
+                              onClick={() => toggleNeed(need)}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-700"
+                            >
+                              {need}
+                              <span className="text-emerald-500">×</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     <p className="text-xs text-slate-400">
                       Wybrano {needs.length}/5 {needs.length < 3 && '— wybierz co najmniej 3'}
                     </p>

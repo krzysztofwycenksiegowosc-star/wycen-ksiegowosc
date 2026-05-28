@@ -4,7 +4,6 @@ import { EstimationForm } from './components/EstimationForm';
 import { Benefits } from './components/Benefits';
 import { WhyNotChange } from './components/WhyNotChange';
 import { FounderSection } from './components/FounderSection';
-import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
 
 function App() {
@@ -17,8 +16,7 @@ function App() {
         <Benefits />
         <WhyNotChange />
         <FounderSection />
-        <FinalCTA />
-      </main>
+        </main>
       <Footer />
     </div>
   );

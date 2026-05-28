@@ -127,7 +127,7 @@ export function Benefits() {
           <div className="text-center mt-10">
             <button
               onClick={() => {
-                window.dispatchEvent(new CustomEvent('wk-form-mode', { detail: 'existing' }));
+                window.dispatchEvent(new CustomEvent('wk-form-mode', { detail: 'reset' }));
                 setTimeout(() => document.getElementById('wycena')?.scrollIntoView({ behavior: 'smooth' }), 50);
               }}
               className="group inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-2xl text-base font-semibold transition-all duration-300 hover:shadow-xl hover:shadow-emerald-600/20 hover:-translate-y-0.5"
